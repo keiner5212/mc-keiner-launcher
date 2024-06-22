@@ -3,9 +3,12 @@ package minecraft.client.GUI.Background;
 import java.io.File;
 import java.util.HashMap;
 
+import org.json.JSONObject;
+
 import minecraft.client.GUI.Logger;
 import minecraft.client.entities.Json;
 import minecraft.client.net.HttpRequests;
+import minecraft.client.persistance.FileManager;
 
 public class AssetsDownload implements Runnable {
     private Double progress;
@@ -13,9 +16,12 @@ public class AssetsDownload implements Runnable {
     private String assetsBaseUrl = "https://resources.download.minecraft.net/";
     private String assetsIndexurl;
     private String Path;
-    Integer totalSize;
+    private Integer totalSize;
+    private String assetId;
 
-    public AssetsDownload(Double progress, Logger logger, String assetsIndexurl, String Path, Integer totalSize) {
+    public AssetsDownload(Double progress, Logger logger, String assetsIndexurl, String Path, Integer totalSize,
+            String assetId) {
+        this.assetId = assetId;
         this.totalSize = totalSize;
         this.Path = Path;
         this.progress = progress;
@@ -27,7 +33,12 @@ public class AssetsDownload implements Runnable {
     @Override
     public void run() {
         logger.log("Fetching assets index...");
-        Json json = HttpRequests.sendGetJSONHTTPRequest(assetsIndexurl, true);
+        Json json = Json.fromJSONObject(FileManager.loadData(Path + "\\assets\\indexes\\" + assetId + ".json"));
+        if (json == null) {
+            json = HttpRequests.sendGetJSONHTTPRequest(assetsIndexurl, true);
+            FileManager.saveData(Path + "\\assets\\indexes\\" + assetId + ".json",
+                    (json).toJSONObject());
+        }
         HashMap<String, HashMap<String, Object>> assets = (HashMap<String, HashMap<String, Object>>) json.getContent()
                 .get("objects");
         for (String asset : assets.keySet()) {
@@ -36,12 +47,12 @@ public class AssetsDownload implements Runnable {
             String url = assetsBaseUrl + hash.substring(0, 2) + "/" + hash;
             progress += Integer.parseInt(assetInfo.get("size").toString());
             logger.progress(progress, totalSize);
-            File file = new File(Path + "\\assets\\" + asset);
+            File file = new File(Path + "\\assets\\objects\\" + hash.substring(0, 2) + "/" + hash);
             if (file.exists()) {
                 logger.log("Skipping asset " + asset + "...");
                 continue;
             }
-            HttpRequests.downloadFile(url, Path + "\\assets\\" + asset);
+            HttpRequests.downloadFile(url, Path + "\\assets\\objects\\" + hash.substring(0, 2) + "/" + hash);
             logger.log("Downloading asset " + asset + "...");
         }
 

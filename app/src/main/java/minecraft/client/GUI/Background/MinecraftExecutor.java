@@ -8,6 +8,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import minecraft.client.GUI.Logger;
+
 public class MinecraftExecutor {
 
     private String minecraftJar;
@@ -28,11 +30,15 @@ public class MinecraftExecutor {
     private String versionType;
     private int width;
     private int height;
+    private String jvm;
+    private Logger logger;
 
     public MinecraftExecutor(String minecraftJar, String libraries, int Memory, String minecraftClass,
             String username, String version, String gameDir, String assetsDir, String assetIndex, String uuid,
             String accessToken, String clientId, String xuid, String userType, String versionType, int width,
-            int height) {
+            int height, String jvm, Logger logger) {
+        this.jvm = jvm;
+        this.logger = logger;
         this.minecraftJar = minecraftJar;
         this.libraries = libraries;
         this.maxMemory = Memory;
@@ -56,9 +62,7 @@ public class MinecraftExecutor {
     public void launchMinecraft() {
         try {
             List<String> command = new ArrayList<>();
-            command.add("java");
-            command.add("-cp");
-            command.add(minecraftJar + ":" + libraries);
+            command.add(jvm);
             command.add("-Xmx" + maxMemory + "M");
             command.add("-Xms" + minMemory + "M");
             command.add("-XX:+UnlockExperimentalVMOptions");
@@ -67,25 +71,41 @@ public class MinecraftExecutor {
             command.add("-XX:MaxGCPauseMillis=100");
             command.add("-XX:G1HeapRegionSize=16M");
             command.add("-Djava.net.preferIPv4Stack=true");
-            command.add("--width " + width);
-            command.add("--height " + height);
-            command.add("--username " + username);
-            command.add("--version " + version);
-            command.add("--gameDir " + gameDir);
-            command.add("--assetsDir " + assetsDir);
-            command.add("--assetIndex " + assetIndex);
-            command.add("--uuid " + uuid);
-            command.add("--accessToken " + accessToken);
-            command.add("--clientId " + clientId);
-            command.add("--xuid " + xuid);
-            command.add("--userType " + userType);
-            command.add("--versionType " + versionType);
+            command.add("-cp");
+            command.add(minecraftJar + ";" + libraries);
+
             command.add(minecraftClass);
+            command.add("--width");
+            command.add(String.valueOf(width));
+            command.add("--height");
+            command.add(String.valueOf(height));
+            command.add("--username");
+            command.add(username);
+            command.add("--version");
+            command.add(version);
+            command.add("--gameDir");
+            command.add(gameDir);
+            command.add("--assetsDir");
+            command.add(assetsDir);
+            command.add("--assetIndex");
+            command.add(assetIndex);
+            command.add("--uuid");
+            command.add(uuid);
+            command.add("--accessToken");
+            command.add(accessToken);
+            command.add("--clientId");
+            command.add(clientId);
+            command.add("--xuid");
+            command.add(xuid);
+            command.add("--userType");
+            command.add(userType);
+            command.add("--versionType");
+            command.add(versionType);
+
 
             ProcessBuilder processBuilder = new ProcessBuilder(command);
-
-            processBuilder.directory(new File(minecraftJar).getParentFile());
-
+            logger.log("Starting Minecraft...");
+            logger.log("Command: " + processBuilder.command());
             Process process = processBuilder.start();
 
             InputStream inputStream = process.getInputStream();
@@ -116,7 +136,7 @@ public class MinecraftExecutor {
             }).start();
 
             int exitCode = process.waitFor();
-            System.out.println("Exit code: " + exitCode);
+            logger.log("Minecraft exited with code: " + exitCode);
 
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();

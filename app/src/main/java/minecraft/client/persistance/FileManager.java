@@ -33,6 +33,7 @@ public class FileManager {
             }
         } catch (IOException e) {
             System.out.println("Not found: " + filePath);
+            return null;
         }
         return new JSONObject(data.toString());
     }

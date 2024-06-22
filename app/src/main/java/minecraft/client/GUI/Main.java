@@ -65,6 +65,9 @@ public class Main extends javax.swing.JFrame {
         gamedir.setText(defaultDir.getAbsolutePath());
         memory.setSelectedItem("4");
 
+        jvm.setText("D:\\Program Files\\Java\\jdk-22\\bin\\java.exe");
+        username.setText("keiner5212");
+
         try {
             VersionsVanilla versionsThread = new VersionsVanilla(versions, typeFilter.getSelectedItem().toString());
             Thread thread = new Thread(versionsThread);
@@ -88,11 +91,16 @@ public class Main extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated
     // <editor-fold defaultstate="collapsed" desc="Generated
+    // <editor-fold defaultstate="collapsed" desc="Generated
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
         instalations_and_name = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        username = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        jvm = new javax.swing.JTextField();
         jPanel3 = new javax.swing.JPanel();
         play_download = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -123,15 +131,41 @@ public class Main extends javax.swing.JFrame {
         instalations_and_name.setMaximumSize(new java.awt.Dimension(300, 32767));
         instalations_and_name.setMinimumSize(new java.awt.Dimension(300, 0));
 
+        jLabel2.setFont(new java.awt.Font("Microsoft JhengHei UI", 0, 12)); // NOI18N
+        jLabel2.setText("Username:");
+
+        username.setFont(jLabel1.getFont());
+
+        jLabel3.setFont(new java.awt.Font("Microsoft JhengHei UI", 0, 12)); // NOI18N
+        jLabel3.setText("JVM:");
+
+        jvm.setFont(jLabel1.getFont());
+
         javax.swing.GroupLayout instalations_and_nameLayout = new javax.swing.GroupLayout(instalations_and_name);
         instalations_and_name.setLayout(instalations_and_nameLayout);
         instalations_and_nameLayout.setHorizontalGroup(
             instalations_and_nameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(instalations_and_nameLayout.createSequentialGroup()
+                .addGap(30, 30, 30)
+                .addGroup(instalations_and_nameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel2)
+                    .addComponent(username, javax.swing.GroupLayout.DEFAULT_SIZE, 235, Short.MAX_VALUE)
+                    .addComponent(jvm))
+                .addContainerGap(35, Short.MAX_VALUE))
         );
         instalations_and_nameLayout.setVerticalGroup(
             instalations_and_nameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, instalations_and_nameLayout.createSequentialGroup()
+                .addContainerGap(274, Short.MAX_VALUE)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jvm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(34, 34, 34)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(username, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(134, 134, 134))
         );
 
         jPanel1.add(instalations_and_name);
@@ -254,7 +288,7 @@ public class Main extends javax.swing.JFrame {
                         .addComponent(loaderlabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(resolution, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 45, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)
                 .addGroup(play_downloadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(loaderversionlabel)
                     .addComponent(loaderversion, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -332,7 +366,7 @@ public class Main extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1038, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -423,7 +457,12 @@ public class Main extends javax.swing.JFrame {
 
     private void playActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_playActionPerformed
         VersionDownloader versionDownloader = new VersionDownloader(Loader.getSelectedItem().toString(),
-                versions.getSelectedItem().toString(), loaderVersionSelected, gamedir.getText(), installerLogger);
+                versions.getSelectedItem().toString(), loaderVersionSelected, gamedir.getText(), installerLogger,
+                Integer.parseInt(memory.getSelectedItem().toString()) * 1024, username.getText(),
+                Integer.parseInt(resolution.getText().split("x")[0]),
+                Integer.parseInt(resolution.getText().split("x")[1]),
+                jvm.getText().trim()
+                );
         Thread thread = new Thread(versionDownloader);
         thread.start();
     }// GEN-LAST:event_playActionPerformed
@@ -434,8 +473,11 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JTextField gamedir;
     private javax.swing.JPanel instalations_and_name;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JTextField jvm;
     private javax.swing.JLabel loaderlabel;
     private javax.swing.JLabel loaderlabel1;
     private javax.swing.JLabel loaderlabel2;
@@ -452,6 +494,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JTextField resolution;
     private javax.swing.JComboBox<String> typeFilter;
     private javax.swing.JLabel typelabel;
+    private javax.swing.JTextField username;
     private javax.swing.JComboBox<String> versions;
     // End of variables declaration//GEN-END:variables
 }

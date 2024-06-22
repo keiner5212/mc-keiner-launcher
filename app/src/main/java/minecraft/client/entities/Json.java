@@ -96,6 +96,9 @@ public class Json {
     }
 
     public static Json fromJSONObject(JSONObject jo) {
+        if (jo == null) {
+            return null;
+        }
         Json json = new Json();
         json.setContent(jo.toMap());
         return json;

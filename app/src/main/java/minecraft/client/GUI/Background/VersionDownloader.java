@@ -21,8 +21,19 @@ public class VersionDownloader implements Runnable {
     private String Path;
     private String VanillaversionId;
     private Logger logger;
+    private int Memory;
+    private String username;
+    private int width;
+    private int height;
+    private String jvm;
 
-    public VersionDownloader(String loader, String VanillaversionId, String loaderVersion, String Path, Logger logger) {
+    public VersionDownloader(String loader, String VanillaversionId, String loaderVersion, String Path, Logger logger,
+            int Memory, String username, int width, int height, String jvm) {
+        this.jvm = jvm;
+        this.width = width;
+        this.height = height;
+        this.username = username;
+        this.Memory = Memory;
         this.logger = logger;
         this.Path = Path;
         this.VanillaversionId = VanillaversionId.split(" ")[0];
@@ -56,6 +67,7 @@ public class VersionDownloader implements Runnable {
                     FileManager.saveData(Path + "\\versions\\" + VanillaversionId + "\\" + VanillaversionId + ".json",
                             ((Json) args[0]).toJSONObject());
                     // start the downloads
+                    String Libraries = "";
                     Double progress = 0.0;
                     Integer totalSize = 0;
 
@@ -67,10 +79,6 @@ public class VersionDownloader implements Runnable {
                     totalSize += Integer.parseInt(assetIndex.get("size").toString());
                     totalSize += Integer.parseInt(assetIndex.get("totalSize").toString());
 
-                    Thread thread = new Thread(
-                            new AssetsDownload(progress, logger, assetIndex.get("url").toString(), Path, totalSize));
-                    thread.start();
-
                     HashMap<String, Object> javaVersion = (HashMap<String, Object>) content.get("javaVersion");
                     logger.log("Minimum Java version required: " + javaVersion.toString());
 
@@ -81,7 +89,7 @@ public class VersionDownloader implements Runnable {
 
                     logger.log("Calculating total download size...");
 
-                    totalSize = Integer.parseInt(client.get("size").toString());
+                    totalSize += Integer.parseInt(client.get("size").toString());
                     for (HashMap<String, Object> dependency : dependencies) {
                         HashMap<String, Object> dependencyDownloads = (HashMap<String, Object>) dependency
                                 .get("downloads");
@@ -91,6 +99,12 @@ public class VersionDownloader implements Runnable {
                     }
 
                     logger.log("Total download size (Bytes): " + totalSize);
+
+                    // 2. download assets
+                    Thread thread = new Thread(
+                            new AssetsDownload(progress, logger, assetIndex.get("url").toString(), Path, totalSize,
+                                    content.get("assets").toString()));
+                    thread.start();
 
                     logger.log("Downloading " + VanillaversionId + " client...");
                     logger.progress(progress, totalSize);
@@ -111,7 +125,7 @@ public class VersionDownloader implements Runnable {
 
                     logger.log("Downloading " + VanillaversionId + " client complete.");
 
-                    // 2. download dependencies
+                    // 3. download dependencies
                     logger.log("Downloading braries...");
 
                     for (HashMap<String, Object> dependency : dependencies) {
@@ -137,10 +151,10 @@ public class VersionDownloader implements Runnable {
                                         if (!downloaded) {
                                             return;
                                         }
-                                    }else{
+                                    } else {
                                         logger.log("Skipping library " + dependency.get("name").toString() + "...");
                                     }
-
+                                    Libraries += Path + "\\libraries\\" + dependencyartifact.get("path") + ";";
                                     progress += Integer.parseInt(dependencyartifact.get("size").toString());
                                     logger.progress(progress, totalSize);
                                 }
@@ -155,9 +169,10 @@ public class VersionDownloader implements Runnable {
                                 if (!downloaded) {
                                     return;
                                 }
-                            }else{
+                            } else {
                                 logger.log("Skipping library " + dependency.get("name").toString() + "...");
                             }
+                            Libraries += Path + "\\libraries\\" + dependencyartifact.get("path") + ";";
                             progress += Integer.parseInt(dependencyartifact.get("size").toString());
                             logger.progress(progress, totalSize);
 
@@ -171,13 +186,33 @@ public class VersionDownloader implements Runnable {
                         logger.log("Failed to wait for assets download.");
                     }
                     logger.log("Download complete. " + VanillaversionId + " version is ready. ");
-                    
+
                     logger.progress(totalSize, totalSize);
-                    // 3. download assets
+
+                    File runtime = new File(Path + "\\runtime\\" + VanillaversionId + "\\");
+                    if (!runtime.exists()) {
+                        runtime.mkdirs();
+                    }
 
                     // 4. handle the loaders (Fabric, Forge, Vanilla)
 
                     // 5. run the client
+                    MinecraftExecutor executor = new MinecraftExecutor(
+                            Path + "\\versions\\" + VanillaversionId + "\\" + VanillaversionId + ".jar",
+                            Libraries,
+                            Memory, content.get("mainClass").toString(),
+                            username,
+                            VanillaversionId,
+                            Path + "\\runtime\\" + VanillaversionId + "\\",
+                            Path + "\\assets\\", content.get("assets").toString(),
+                            "00000000-0000-0000-0000-000000000000",
+                            "00000000-0000-0000-0000-000000000000:00000000-0000-0000-0000-000000000000",
+                            "00000000-0000-0000-0000-000000000000",
+                            "0000000000000000",
+                            "legacy",
+                            content.get("type").toString(), width, height, jvm, logger);
+                    executor.launchMinecraft();
+
                 } else {
                     logger.log("Failed to fetch " + VanillaversionId + " version. ");
                 }
