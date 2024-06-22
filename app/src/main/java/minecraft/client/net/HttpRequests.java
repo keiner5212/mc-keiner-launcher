@@ -64,7 +64,7 @@ public class HttpRequests {
         return null;
     }
 
-    public static boolean downloadJarFile(String url, String savePath) {
+    public static boolean downloadFile(String url, String savePath) {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpGet request = new HttpGet(url);
             try (CloseableHttpResponse response = httpClient.execute(request)) {
@@ -74,7 +74,7 @@ public class HttpRequests {
                         Path outputPath = Paths.get(savePath);
                         Files.createDirectories(outputPath.getParent());
                         try (OutputStream outputStream = new FileOutputStream(outputPath.toFile())) {
-                            byte[] buffer = new byte[4096];
+                            byte[] buffer = new byte[8192];
                             int bytesRead;
                             while ((bytesRead = inputStream.read(buffer)) != -1) {
                                 outputStream.write(buffer, 0, bytesRead);

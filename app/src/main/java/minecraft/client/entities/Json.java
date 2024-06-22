@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -88,5 +89,15 @@ public class Json {
 
     public void setContent(Map<String, Object> content) {
         this.content = content;
+    }
+
+    public JSONObject toJSONObject() {
+        return new JSONObject(content);
+    }
+
+    public static Json fromJSONObject(JSONObject jo) {
+        Json json = new Json();
+        json.setContent(jo.toMap());
+        return json;
     }
 }

@@ -1,6 +1,6 @@
 package minecraft.client.GUI.Background;
 
-import java.lang.reflect.Array;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -9,6 +9,7 @@ import minecraft.client.api.GetVanillaUrls;
 import minecraft.client.entities.Json;
 import minecraft.client.entities.Operation;
 import minecraft.client.net.HttpRequests;
+import minecraft.client.persistance.FileManager;
 
 /**
  *
@@ -24,7 +25,7 @@ public class VersionDownloader implements Runnable {
     public VersionDownloader(String loader, String VanillaversionId, String loaderVersion, String Path, Logger logger) {
         this.logger = logger;
         this.Path = Path;
-        this.VanillaversionId = VanillaversionId;
+        this.VanillaversionId = VanillaversionId.split(" ")[0];
 
         switch (loader) {
             case "Fabric":
@@ -52,12 +53,23 @@ public class VersionDownloader implements Runnable {
             public void Run(Object... args) {
                 if (args.length != 0) {
                     logger.log("Fetching " + VanillaversionId + " version complete.");
+                    FileManager.saveData(Path + "\\versions\\" + VanillaversionId + "\\" + VanillaversionId + ".json",
+                            ((Json) args[0]).toJSONObject());
                     // start the downloads
-                    double progress = 0;
-                    int totalSize = 0;
+                    Double progress = 0.0;
+                    Integer totalSize = 0;
 
                     // 1. download the vanilla client
                     HashMap<String, Object> content = (HashMap<String, Object>) ((Json) args[0]).getContent();
+
+                    HashMap<String, Object> assetIndex = (HashMap<String, Object>) content.get("assetIndex");
+
+                    totalSize += Integer.parseInt(assetIndex.get("size").toString());
+                    totalSize += Integer.parseInt(assetIndex.get("totalSize").toString());
+
+                    Thread thread = new Thread(
+                            new AssetsDownload(progress, logger, assetIndex.get("url").toString(), Path, totalSize));
+                    thread.start();
 
                     HashMap<String, Object> javaVersion = (HashMap<String, Object>) content.get("javaVersion");
                     logger.log("Minimum Java version required: " + javaVersion.toString());
@@ -81,17 +93,21 @@ public class VersionDownloader implements Runnable {
                     logger.log("Total download size (Bytes): " + totalSize);
 
                     logger.log("Downloading " + VanillaversionId + " client...");
-                    logger.log("progress (Bytes): " + progress + " / " + totalSize);
-                    boolean downloaded = HttpRequests
-                            .downloadJarFile(client.get("url").toString(), Path + "\\client.jar");
+                    logger.progress(progress, totalSize);
+
+                    File file = new File(Path + "\\versions\\" + VanillaversionId + "\\" + VanillaversionId + ".jar");
+                    if (!file.exists()) {
+                        boolean downloaded = HttpRequests
+                                .downloadFile(client.get("url").toString(),
+                                        Path + "\\versions\\" + VanillaversionId + "\\" + VanillaversionId + ".jar");
+                        if (!downloaded) {
+                            logger.log("Failed to download " + VanillaversionId + " client. ");
+                            return;
+                        }
+                    }
 
                     progress += Integer.parseInt(client.get("size").toString());
-                    logger.log("progress (Bytes): " + progress + " / " + totalSize);
-
-                    if (!downloaded) {
-                        logger.log("Failed to download " + VanillaversionId + " client. ");
-                        return;
-                    }
+                    logger.progress(progress, totalSize);
 
                     logger.log("Downloading " + VanillaversionId + " client complete.");
 
@@ -108,48 +124,66 @@ public class VersionDownloader implements Runnable {
                         if (dependencyrules != null) {
                             for (HashMap<String, Object> rule : dependencyrules) {
                                 HashMap<String, Object> os = (HashMap<String, Object>) rule.get("os");
-                                if (os != null) {
-                                    if (System.getProperty("os.name").toLowerCase().contains(
-                                            os.get("name").toString().toLowerCase())) {
-                                        logger.log("Downloading " + dependency.get("name").toString() + " library...");
-                                        downloaded = HttpRequests
-                                                .downloadJarFile(dependencyartifact.get("url").toString(),
-                                                        Path + "\\" + dependencyartifact.get("path"));
+                                if (os != null && System.getProperty("os.name").toLowerCase().contains(
+                                        os.get("name").toString().toLowerCase())) {
+
+                                    logger.log("Downloading library " + dependency.get("name").toString() + "...");
+
+                                    file = new File(Path + "\\libraries\\" + dependencyartifact.get("path"));
+                                    if (!file.exists()) {
+                                        boolean downloaded = HttpRequests
+                                                .downloadFile(dependencyartifact.get("url").toString(),
+                                                        Path + "\\libraries\\" + dependencyartifact.get("path"));
                                         if (!downloaded) {
                                             return;
-                                        } else {
-                                            progress += Integer.parseInt(dependencyartifact.get("size").toString());
-                                            logger.log("progress (Bytes): " + progress + " / " + totalSize);
                                         }
+                                    }else{
+                                        logger.log("Skipping library " + dependency.get("name").toString() + "...");
                                     }
-                                }
 
+                                    progress += Integer.parseInt(dependencyartifact.get("size").toString());
+                                    logger.progress(progress, totalSize);
+                                }
                             }
                         } else {
-                            logger.log("Downloading " + dependency.get("name").toString() + " library...");
-                            downloaded = HttpRequests
-                                    .downloadJarFile(dependencyartifact.get("url").toString(),
-                                            Path + "\\" + dependencyartifact.get("path"));
-                            if (!downloaded) {
-                                return;
-                            } else {
-                                progress += Integer.parseInt(dependencyartifact.get("size").toString());
-                                logger.log("progress (Bytes): " + progress + " / " + totalSize);
+                            logger.log("Downloading library " + dependency.get("name").toString() + "...");
+                            file = new File(Path + "\\libraries\\" + dependencyartifact.get("path"));
+                            if (!file.exists()) {
+                                boolean downloaded = HttpRequests
+                                        .downloadFile(dependencyartifact.get("url").toString(),
+                                                Path + "\\libraries\\" + dependencyartifact.get("path"));
+                                if (!downloaded) {
+                                    return;
+                                }
+                            }else{
+                                logger.log("Skipping library " + dependency.get("name").toString() + "...");
                             }
+                            progress += Integer.parseInt(dependencyartifact.get("size").toString());
+                            logger.progress(progress, totalSize);
+
                         }
                     }
-                    
+                    logger.progress(totalSize, totalSize);
+
                     logger.log("Downloading libraries complete.");
+                    try {
+                        thread.join();
+                    } catch (Exception e) {
+                        logger.log("Failed to wait for assets download.");
+                    }
+                    logger.log("Download complete. " + VanillaversionId + " version is ready. ");
+                    
+                    // 3. download assets
 
-                    // 3. handle the loaders (Fabric, Forge, Vanilla)
+                    // 4. handle the loaders (Fabric, Forge, Vanilla)
 
-                    // 4.  run the client
+                    // 5. run the client
                 } else {
                     logger.log("Failed to fetch " + VanillaversionId + " version. ");
                 }
             }
         };
-        Thread thread = new Thread(new GetVanillaUrls(operation, VanillaversionId.split(" ")[0]));
+        Thread thread = new Thread(new GetVanillaUrls(operation, VanillaversionId.split(" ")[0], Path));
         thread.start();
     }
 
