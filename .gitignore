@@ -18,8 +18,9 @@ gradle-app.setting
 # Cache of project
 .gradletasknamecache
 
-# bin
-bin
+# bin & logs
+bin/
+logs/
 
 # Eclipse Gradle plugin generated files
 # Eclipse Core
