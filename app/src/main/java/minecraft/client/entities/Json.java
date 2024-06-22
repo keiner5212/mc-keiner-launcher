@@ -10,6 +10,7 @@ import org.apache.http.util.EntityUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 public class Json {
     private Map<String, Object> content = new HashMap<>();
@@ -18,14 +19,20 @@ public class Json {
         return content;
     }
 
-    public static Json JsonfromHttpEntity(HttpEntity entity) {
+    public static Json JsonfromHttpEntity(HttpEntity entity, boolean isXml) {
         Json json = new Json();
         try {
             if (entity != null) {
                 String result = EntityUtils.toString(entity);
-                ObjectMapper mapper = new ObjectMapper();
+                ObjectMapper mapper = isXml ? new XmlMapper() : new ObjectMapper();
                 JsonNode rootNode = mapper.readTree(result);
-                json.parseJsonNode(rootNode, json.getContent());
+                if (rootNode.isArray()) {
+                    ArrayList<Object> list = new ArrayList<>();
+                    json.parseJsonArray(rootNode, list);
+                    json.getContent().put("data", list);
+                } else {
+                    json.parseJsonNode(rootNode, json.getContent());
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -63,8 +70,23 @@ public class Json {
         }
     }
 
+    private void parseJsonArray(JsonNode arrayNode, List<Object> list) {
+        for (JsonNode arrayElement : arrayNode) {
+            if (arrayElement.isObject()) {
+                Map<String, Object> nestedMap = new HashMap<>();
+                parseJsonNode(arrayElement, nestedMap);
+                list.add(nestedMap);
+            } else if (arrayElement.isValueNode()) {
+                list.add(arrayElement.asText());
+            } else if (arrayElement.isArray()) {
+                List<Object> nestedList = new ArrayList<>();
+                parseJsonArray(arrayElement, nestedList);
+                list.add(nestedList);
+            }
+        }
+    }
+
     public void setContent(Map<String, Object> content) {
         this.content = content;
     }
-
 }

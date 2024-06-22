@@ -18,7 +18,11 @@ repositories {
 
 dependencies {
     implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.12.3'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.3'
+    // https://mvnrepository.com/artifact/com.jtattoo/JTattoo
+    implementation 'com.jtattoo:JTattoo:1.6.13'
 }
 
 application {
