@@ -23,6 +23,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.3'
     // https://mvnrepository.com/artifact/com.jtattoo/JTattoo
     implementation 'com.jtattoo:JTattoo:1.6.13'
+    // https://mvnrepository.com/artifact/org.json/json
+    implementation 'org.json:json:20240303'
 }
 
 application {

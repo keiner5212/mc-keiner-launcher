@@ -23,14 +23,13 @@ public class VersionsVanilla implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("actualizando versiones vanilla");
         ArrayList<HashMap<String, Object>> versions = (ArrayList<HashMap<String, Object>>) VersionsRequests
                 .getVersionsVanilla();
         lista.removeAllItems();
         switch (type) {
             case "Any":
                 for (HashMap<String, Object> version : versions) {
-                    lista.addItem(version.get("id").toString() + " - " + version.get("type").toString());
+                    lista.addItem(version.get("id").toString() + " (" + version.get("type").toString() + ")");
                 }
                 break;
 
@@ -54,7 +53,7 @@ public class VersionsVanilla implements Runnable {
                 for (HashMap<String, Object> version : versions) {
                     if (!version.get("type").toString().equals("release")
                             && !version.get("type").toString().equals("snapshot")) {
-                        lista.addItem(version.get("id").toString() + " - " + version.get("type").toString());
+                        lista.addItem(version.get("id").toString() + " (" + version.get("type").toString() + ")");
                     }
                 }
                 break;

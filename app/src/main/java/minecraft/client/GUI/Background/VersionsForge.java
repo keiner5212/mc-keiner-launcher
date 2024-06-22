@@ -17,7 +17,6 @@ public class VersionsForge implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("actualizando versiones forge");
         ArrayList<String> versions = (ArrayList<String>) VersionsRequests
                 .getVersionsForge();
         lista.removeAllItems();

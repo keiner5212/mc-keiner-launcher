@@ -1,5 +1,12 @@
 package minecraft.client.net;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 
 import org.apache.http.HttpEntity;
@@ -55,6 +62,32 @@ public class HttpRequests {
         }
 
         return null;
+    }
+
+    public static boolean downloadJarFile(String url, String savePath) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpGet request = new HttpGet(url);
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
+                HttpEntity entity = response.getEntity();
+                if (entity != null) {
+                    try (InputStream inputStream = entity.getContent()) {
+                        Path outputPath = Paths.get(savePath);
+                        Files.createDirectories(outputPath.getParent());
+                        try (OutputStream outputStream = new FileOutputStream(outputPath.toFile())) {
+                            byte[] buffer = new byte[4096];
+                            int bytesRead;
+                            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                                outputStream.write(buffer, 0, bytesRead);
+                            }
+                        }
+                        return true;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
 }
