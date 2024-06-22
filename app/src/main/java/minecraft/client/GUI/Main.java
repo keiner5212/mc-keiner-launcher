@@ -5,6 +5,7 @@
 package minecraft.client.GUI;
 
 import com.jtattoo.plaf.hifi.HiFiLookAndFeel;
+import java.io.File;
 
 import minecraft.client.GUI.Background.VersionsVanilla;
 import minecraft.client.util.ColorUtils;
@@ -12,6 +13,8 @@ import minecraft.client.util.ColorUtils;
 import javax.swing.BorderFactory;
 
 import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
+import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import minecraft.client.GUI.Background.VersionsFabric;
@@ -48,15 +51,33 @@ public class Main extends javax.swing.JFrame {
         loaderversionlabel.setVisible(false);
         loaderversion.setVisible(false);
 
-        Border rightBorder = BorderFactory.createMatteBorder(0, 0, 0, 2, ColorUtils.hexStringToColor("#111"));
+        Border rightBorder = BorderFactory.createMatteBorder(0, 0, 0, 2, ColorUtils.hexStringToColor("#161313"));
         instalations_and_name.setBorder(rightBorder);
-
-        Border topBorder = BorderFactory.createMatteBorder(2, 0, 0, 0, ColorUtils.hexStringToColor("#111"));
+        Border topBorder = BorderFactory.createMatteBorder(2, 0, 0, 0, ColorUtils.hexStringToColor("#161313"));
         play_download.setBorder(topBorder);
 
-        VersionsVanilla versionsThread = new VersionsVanilla(versions, typeFilter.getSelectedItem().toString());
-        Thread thread = new Thread(versionsThread);
-        thread.start();
+        String userName = System.getProperty("user.name");
+        String defaultDirPath = "C:\\Users\\" + userName + "\\AppData\\Roaming\\.minecraft";
+        File defaultDir = new File(defaultDirPath);
+        if (!defaultDir.exists()) {
+            defaultDir.mkdirs();
+        }
+        gamedir.setText(defaultDir.getAbsolutePath());
+
+        jScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+
+        try {
+            VersionsVanilla versionsThread = new VersionsVanilla(versions, typeFilter.getSelectedItem().toString());
+            Thread thread = new Thread(versionsThread);
+            thread.start();
+            thread.join();
+            typeFilter.setEnabled(true);
+            versions.setEnabled(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     /**
@@ -81,6 +102,11 @@ public class Main extends javax.swing.JFrame {
         typeFilter = new javax.swing.JComboBox<>();
         loaderversionlabel = new javax.swing.JLabel();
         loaderversion = new javax.swing.JComboBox<>();
+        play = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        gamedir = new javax.swing.JTextPane();
+        loaderlabel1 = new javax.swing.JLabel();
+        changedir = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -102,34 +128,69 @@ public class Main extends javax.swing.JFrame {
 
         jPanel1.add(instalations_and_name);
 
+        jLabel1.setFont(new java.awt.Font("Microsoft JhengHei UI", 0, 12)); // NOI18N
         jLabel1.setText("Select the game version:");
 
+        versions.setFont(new java.awt.Font("Microsoft JhengHei UI", 0, 12)); // NOI18N
         versions.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Loading" }));
+        versions.setEnabled(false);
+        versions.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                versionsActionPerformed(evt);
+            }
+        });
 
+        loaderlabel.setFont(new java.awt.Font("Microsoft JhengHei UI", 0, 12)); // NOI18N
         loaderlabel.setText("Select loader:");
 
+        Loader.setFont(new java.awt.Font("Microsoft JhengHei UI", 0, 12)); // NOI18N
         Loader.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Vanilla", "Forge", "Fabric" }));
+        Loader.setEnabled(false);
         Loader.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 LoaderActionPerformed(evt);
             }
         });
 
+        typelabel.setFont(new java.awt.Font("Microsoft JhengHei UI", 0, 12)); // NOI18N
         typelabel.setText("Type filter:");
 
+        typeFilter.setFont(new java.awt.Font("Microsoft JhengHei UI", 0, 12)); // NOI18N
         typeFilter.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Any", "Release", "Snapshot", "Other" }));
+        typeFilter.setEnabled(false);
         typeFilter.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 typeFilterActionPerformed(evt);
             }
         });
 
+        loaderversionlabel.setFont(new java.awt.Font("Microsoft JhengHei UI", 0, 12)); // NOI18N
         loaderversionlabel.setText("Loader Version:");
 
+        loaderversion.setFont(new java.awt.Font("Microsoft JhengHei UI", 0, 12)); // NOI18N
         loaderversion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Loading" }));
         loaderversion.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loaderversionActionPerformed(evt);
+            }
+        });
+
+        play.setBackground(new java.awt.Color(102, 255, 102));
+        play.setFont(new java.awt.Font("Microsoft JhengHei UI", 0, 12)); // NOI18N
+        play.setForeground(new java.awt.Color(0, 0, 0));
+        play.setText("Play");
+
+        gamedir.setFont(jLabel1.getFont());
+        jScrollPane1.setViewportView(gamedir);
+
+        loaderlabel1.setFont(new java.awt.Font("Microsoft JhengHei UI", 0, 12)); // NOI18N
+        loaderlabel1.setText("Game Dir:");
+
+        changedir.setFont(jLabel1.getFont());
+        changedir.setText("Change");
+        changedir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                changedirActionPerformed(evt);
             }
         });
 
@@ -139,22 +200,33 @@ public class Main extends javax.swing.JFrame {
             play_downloadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(play_downloadLayout.createSequentialGroup()
                 .addGap(45, 45, 45)
-                .addGroup(play_downloadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(loaderlabel)
-                    .addComponent(Loader, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(45, 45, 45)
-                .addGroup(play_downloadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addComponent(versions, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(45, 45, 45)
-                .addGroup(play_downloadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(typelabel)
-                    .addComponent(typeFilter, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(play_downloadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(play_downloadLayout.createSequentialGroup()
+                        .addGroup(play_downloadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(loaderlabel)
+                            .addComponent(Loader, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(45, 45, 45)
+                        .addGroup(play_downloadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1)
+                            .addComponent(versions, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(45, 45, 45)
+                        .addGroup(play_downloadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(changedir)
+                            .addGroup(play_downloadLayout.createSequentialGroup()
+                                .addComponent(typelabel)
+                                .addGap(71, 71, 71))
+                            .addComponent(typeFilter, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(play, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(play_downloadLayout.createSequentialGroup()
+                        .addComponent(loaderlabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 319, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(85, 85, 85)))
                 .addGap(45, 45, 45)
                 .addGroup(play_downloadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(loaderversionlabel)
-                    .addComponent(loaderversion, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(45, Short.MAX_VALUE))
+                    .addComponent(loaderversion, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(45, 45, 45))
         );
         play_downloadLayout.setVerticalGroup(
             play_downloadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -171,21 +243,27 @@ public class Main extends javax.swing.JFrame {
                     .addComponent(Loader, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(typeFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(loaderversion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(88, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addGroup(play_downloadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(play_downloadLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(loaderlabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(changedir))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 104, Short.MAX_VALUE)
+                .addComponent(play, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(23, 23, 23))
         );
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addComponent(play_download, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(play_download, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap(379, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                .addGap(0, 255, Short.MAX_VALUE)
                 .addComponent(play_download, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -195,7 +273,7 @@ public class Main extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1074, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -209,6 +287,11 @@ public class Main extends javax.swing.JFrame {
         VersionsVanilla versionsThread = new VersionsVanilla(versions, typeFilter.getSelectedItem().toString());
         Thread thread = new Thread(versionsThread);
         thread.start();
+        if(typeFilter.getSelectedItem().toString().equals("Release")){
+            Loader.setEnabled(true);
+        }else{
+            Loader.setEnabled(false);
+        }
     }//GEN-LAST:event_typeFilterActionPerformed
 
     private void LoaderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LoaderActionPerformed
@@ -217,7 +300,6 @@ public class Main extends javax.swing.JFrame {
             case "Fabric":
                 loaderversionlabel.setVisible(true);
                 loaderversion.setVisible(true);
-                typeFilter.setSelectedItem("Release");
                 typeFilter.setEnabled(false);
                 VersionsFabric versionsThreadFabric = new VersionsFabric(loaderversion);
                 thread = new Thread(versionsThreadFabric);
@@ -228,7 +310,6 @@ public class Main extends javax.swing.JFrame {
             case "Forge":
                 loaderversionlabel.setVisible(true);
                 loaderversion.setVisible(true);
-                typeFilter.setSelectedItem("Release");
                 typeFilter.setEnabled(false);
                 VersionsForge versionsThreadForge = new VersionsForge(loaderversion, versions.getSelectedItem().toString());
                 thread = new Thread(versionsThreadForge);
@@ -253,15 +334,47 @@ public class Main extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_loaderversionActionPerformed
 
+    private void changedirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changedirActionPerformed
+        String userName = System.getProperty("user.name");
+        String defaultDirPath = "C:\\Users\\" + userName + "\\AppData\\Roaming\\.minecraft";
+        File defaultDir = new File(defaultDirPath);
+        if (!defaultDir.exists()) {
+            defaultDir.mkdirs();
+        }
+        JFileChooser chooser = new JFileChooser(defaultDir);
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int returnVal = chooser.showOpenDialog(null);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File selectedDirectory = chooser.getSelectedFile();
+            System.out.println("Selected directory: " + selectedDirectory.getAbsolutePath());
+        }
+    }//GEN-LAST:event_changedirActionPerformed
+
+    private void versionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_versionsActionPerformed
+        if (Loader.getSelectedItem().toString().equalsIgnoreCase("Forge")) {
+            if (versions.getSelectedItem() == null) {
+                return;
+            }
+            VersionsForge versionsThreadForge = new VersionsForge(loaderversion, versions.getSelectedItem().toString());
+            Thread thread = new Thread(versionsThreadForge);
+            thread.start();
+        }
+    }//GEN-LAST:event_versionsActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<String> Loader;
+    private javax.swing.JButton changedir;
+    private javax.swing.JTextPane gamedir;
     private javax.swing.JPanel instalations_and_name;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel loaderlabel;
+    private javax.swing.JLabel loaderlabel1;
     private javax.swing.JComboBox<String> loaderversion;
     private javax.swing.JLabel loaderversionlabel;
+    private javax.swing.JButton play;
     private javax.swing.JPanel play_download;
     private javax.swing.JComboBox<String> typeFilter;
     private javax.swing.JLabel typelabel;

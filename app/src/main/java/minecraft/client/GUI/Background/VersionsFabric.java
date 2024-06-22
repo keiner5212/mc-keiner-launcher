@@ -16,6 +16,7 @@ public class VersionsFabric implements Runnable {
 
     @Override
     public void run() {
+        System.out.println("actualizando versiones fabric");
         ArrayList<HashMap<String, Object>> versions = (ArrayList<HashMap<String, Object>>) VersionsRequests
                 .getVersionsFabric();
         lista.removeAllItems();

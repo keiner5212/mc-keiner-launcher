@@ -23,6 +23,7 @@ public class VersionsVanilla implements Runnable {
 
     @Override
     public void run() {
+        System.out.println("actualizando versiones vanilla");
         ArrayList<HashMap<String, Object>> versions = (ArrayList<HashMap<String, Object>>) VersionsRequests
                 .getVersionsVanilla();
         lista.removeAllItems();
