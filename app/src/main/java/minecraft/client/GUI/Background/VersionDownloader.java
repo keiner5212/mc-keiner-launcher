@@ -163,7 +163,6 @@ public class VersionDownloader implements Runnable {
 
                         }
                     }
-                    logger.progress(totalSize, totalSize);
 
                     logger.log("Downloading libraries complete.");
                     try {
@@ -173,6 +172,7 @@ public class VersionDownloader implements Runnable {
                     }
                     logger.log("Download complete. " + VanillaversionId + " version is ready. ");
                     
+                    logger.progress(totalSize, totalSize);
                     // 3. download assets
 
                     // 4. handle the loaders (Fabric, Forge, Vanilla)
