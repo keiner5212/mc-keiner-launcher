@@ -7,11 +7,12 @@ import org.json.JSONObject;
 
 import minecraft.client.GUI.Logger;
 import minecraft.client.entities.Json;
+import minecraft.client.entities.SharedCounter;
 import minecraft.client.net.HttpRequests;
 import minecraft.client.persistance.FileManager;
 
 public class AssetsDownload implements Runnable {
-    private Double progress;
+    private SharedCounter progress;
     private Logger logger;
     private String assetsBaseUrl = "https://resources.download.minecraft.net/";
     private String assetsIndexurl;
@@ -19,7 +20,7 @@ public class AssetsDownload implements Runnable {
     private Integer totalSize;
     private String assetId;
 
-    public AssetsDownload(Double progress, Logger logger, String assetsIndexurl, String Path, Integer totalSize,
+    public AssetsDownload(SharedCounter progress, Logger logger, String assetsIndexurl, String Path, Integer totalSize,
             String assetId) {
         this.assetId = assetId;
         this.totalSize = totalSize;
@@ -45,7 +46,7 @@ public class AssetsDownload implements Runnable {
             HashMap<String, Object> assetInfo = assets.get(asset);
             String hash = assetInfo.get("hash").toString();
             String url = assetsBaseUrl + hash.substring(0, 2) + "/" + hash;
-            progress += Integer.parseInt(assetInfo.get("size").toString());
+            progress.incrementValue(Integer.parseInt(assetInfo.get("size").toString()));
             logger.progress(progress, totalSize);
             File file = new File(Path + "\\assets\\objects\\" + hash.substring(0, 2) + "/" + hash);
             if (file.exists()) {

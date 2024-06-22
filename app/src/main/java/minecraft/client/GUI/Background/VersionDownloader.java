@@ -8,6 +8,7 @@ import minecraft.client.GUI.Logger;
 import minecraft.client.api.GetVanillaUrls;
 import minecraft.client.entities.Json;
 import minecraft.client.entities.Operation;
+import minecraft.client.entities.SharedCounter;
 import minecraft.client.net.HttpRequests;
 import minecraft.client.persistance.FileManager;
 
@@ -67,8 +68,8 @@ public class VersionDownloader implements Runnable {
                     FileManager.saveData(Path + "\\versions\\" + VanillaversionId + "\\" + VanillaversionId + ".json",
                             ((Json) args[0]).toJSONObject());
                     // start the downloads
-                    String Libraries = "";
-                    Double progress = 0.0;
+                    StringBuilder Libraries = new StringBuilder();
+                    SharedCounter progress = new SharedCounter();
                     Integer totalSize = 0;
 
                     // 1. download the vanilla client
@@ -120,7 +121,7 @@ public class VersionDownloader implements Runnable {
                         }
                     }
 
-                    progress += Integer.parseInt(client.get("size").toString());
+                    progress.incrementValue(Integer.parseInt(client.get("size").toString()));
                     logger.progress(progress, totalSize);
 
                     logger.log("Downloading " + VanillaversionId + " client complete.");
@@ -140,7 +141,6 @@ public class VersionDownloader implements Runnable {
                                 HashMap<String, Object> os = (HashMap<String, Object>) rule.get("os");
                                 if (os != null && System.getProperty("os.name").toLowerCase().contains(
                                         os.get("name").toString().toLowerCase())) {
-
                                     logger.log("Downloading library " + dependency.get("name").toString() + "...");
 
                                     file = new File(Path + "\\libraries\\" + dependencyartifact.get("path"));
@@ -154,8 +154,10 @@ public class VersionDownloader implements Runnable {
                                     } else {
                                         logger.log("Skipping library " + dependency.get("name").toString() + "...");
                                     }
-                                    Libraries += Path + "\\libraries\\" + dependencyartifact.get("path") + ";";
-                                    progress += Integer.parseInt(dependencyartifact.get("size").toString());
+                                    Libraries .append(Path + "\\libraries\\" + dependencyartifact.get("path") + ";");
+
+                                    progress.incrementValue(
+                                            Integer.parseInt(dependencyartifact.get("size").toString()));
                                     logger.progress(progress, totalSize);
                                 }
                             }
@@ -172,8 +174,8 @@ public class VersionDownloader implements Runnable {
                             } else {
                                 logger.log("Skipping library " + dependency.get("name").toString() + "...");
                             }
-                            Libraries += Path + "\\libraries\\" + dependencyartifact.get("path") + ";";
-                            progress += Integer.parseInt(dependencyartifact.get("size").toString());
+                            Libraries.append(Path + "\\libraries\\" + dependencyartifact.get("path") + ";");
+                            progress.incrementValue(Integer.parseInt(dependencyartifact.get("size").toString()));
                             logger.progress(progress, totalSize);
 
                         }
@@ -182,12 +184,13 @@ public class VersionDownloader implements Runnable {
                     logger.log("Downloading libraries complete.");
                     try {
                         thread.join();
-                    } catch (Exception e) {
+                    } catch (InterruptedException e) {
                         logger.log("Failed to wait for assets download.");
                     }
                     logger.log("Download complete. " + VanillaversionId + " version is ready. ");
 
-                    logger.progress(totalSize, totalSize);
+                    progress.setValue(totalSize);
+                    logger.progress(progress, totalSize);
 
                     File runtime = new File(Path + "\\runtime\\" + VanillaversionId + "\\");
                     if (!runtime.exists()) {
@@ -199,7 +202,7 @@ public class VersionDownloader implements Runnable {
                     // 5. run the client
                     MinecraftExecutor executor = new MinecraftExecutor(
                             Path + "\\versions\\" + VanillaversionId + "\\" + VanillaversionId + ".jar",
-                            Libraries,
+                            Libraries.toString(),
                             Memory, content.get("mainClass").toString(),
                             username,
                             VanillaversionId,
