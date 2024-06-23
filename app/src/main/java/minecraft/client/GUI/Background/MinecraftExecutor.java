@@ -8,6 +8,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import minecraft.client.GUI.Logger;
 
 public class MinecraftExecutor {
@@ -108,38 +110,23 @@ public class MinecraftExecutor {
             logger.log("Command: " + processBuilder.command());
             Process process = processBuilder.start();
 
-            InputStream inputStream = process.getInputStream();
             InputStream errorStream = process.getErrorStream();
-
-            new Thread(() -> {
-                try (BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(inputStream))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        System.out.println(line);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }).start();
 
             new Thread(() -> {
                 try (BufferedReader reader = new BufferedReader(
                         new InputStreamReader(errorStream))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        System.err.println(line);
+                        logger.log(line);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.log(e.getMessage());
                 }
             }).start();
 
-            int exitCode = process.waitFor();
-            logger.log("Minecraft exited with code: " + exitCode);
-
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            System.exit(0);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
