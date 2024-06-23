@@ -25,32 +25,28 @@ public class GetVanillaUrls implements Runnable {
     @Override
     public void run() {
         JSONObject jo = null;
-        try {
-            jo = FileManager.loadData(Path + "\\versions\\" + version + "\\" + version + ".json");
-            if (jo == null) {
-                ArrayList<HashMap<String, Object>> versions = (ArrayList<HashMap<String, Object>>) VersionsRequests
-                        .getVersionsVanilla();
-                String url = null;
-                boolean found = false;
-                for (HashMap<String, Object> v : versions) {
-                    if (v.get("id").toString().equals(version)) {
-                        found = true;
-                        url = (v.get("url").toString());
-                    }
+        jo = FileManager.loadData(Path + "\\versions\\" + version + "\\" + version + ".json");
+        if (jo == null) {
+            ArrayList<HashMap<String, Object>> versions = (ArrayList<HashMap<String, Object>>) VersionsRequests
+                    .getVersionsVanilla();
+            String url = null;
+            boolean found = false;
+            for (HashMap<String, Object> v : versions) {
+                if (v.get("id").toString().equals(version)) {
+                    found = true;
+                    url = (v.get("url").toString());
                 }
-
-                if (!found) {
-                    op.Run();
-                } else {
-                    Json json = HttpRequests.sendGetJSONHTTPRequest(url, true);
-                    op.Run(json);
-                }
-
-            } else {
-                op.Run(Json.fromJSONObject(jo));
             }
-        } catch (Exception e) {
-            System.out.println("error fetching vanilla versions:" + e);
+
+            if (!found) {
+                op.Run();
+            } else {
+                Json json = HttpRequests.sendGetJSONHTTPRequest(url, true);
+                op.Run(json);
+            }
+
+        } else {
+            op.Run(Json.fromJSONObject(jo));
         }
 
     }

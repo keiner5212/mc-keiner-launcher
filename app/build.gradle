@@ -7,8 +7,8 @@
  */
 
 plugins {
-    // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 repositories {
@@ -28,6 +28,11 @@ dependencies {
 }
 
 application {
-    // Define the main class for the application.
-    mainClass = 'minecraft.client.App'
+    mainClassName = 'minecraft.client.App'
+}
+
+shadowJar {
+  manifest {
+    attributes 'Main-Class': 'minecraft.client.App'
+  }
 }

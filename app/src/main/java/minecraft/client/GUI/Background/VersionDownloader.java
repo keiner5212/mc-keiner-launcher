@@ -137,96 +137,102 @@ public class VersionDownloader implements Runnable {
                         HashMap<String, Object> dependencyartifact = (HashMap<String, Object>) dependencyDownloads
                                 .get("artifact");
 
-                        if (dependency.get("name").toString().contains("lwjgl")) {
-                            System.out.println(dependency);
-                        }
-
                         if (dependencyartifact != null) {
                             ArrayList<HashMap<String, Object>> dependencyrules = (ArrayList<HashMap<String, Object>>) dependency
                                     .get("rules");
                             if (dependencyrules != null) {
+                                Boolean allow = true;
                                 for (HashMap<String, Object> rule : dependencyrules) {
+
                                     HashMap<String, Object> os = (HashMap<String, Object>) rule.get("os");
-                                    if (os != null && System.getProperty("os.name").toLowerCase().contains(
-                                            os.get("name").toString().toLowerCase())) {
-                                        logger.log("Downloading library " + dependency.get("name").toString() + "...");
+                                    String action = rule.get("action").toString();
 
-                                        file = new File(Path + "\\libraries\\" + dependencyartifact.get("path"));
-                                        if (!file.exists()) {
-                                            boolean downloaded = HttpRequests
-                                                    .downloadFile(dependencyartifact.get("url").toString(),
-                                                            Path + "\\libraries\\" + dependencyartifact.get("path"));
-                                            if (!downloaded) {
-                                                return;
-                                            }
-                                        } else {
-                                            logger.log("Skipping library " + dependency.get("name").toString() + "...");
+                                    if (action != null && action.equals("disallow")) {
+
+                                        if (os != null
+                                                && os.get("name").toString().toLowerCase().contains("windows")) {
+                                            allow = false;
                                         }
-                                        Libraries.append(Path + "\\libraries\\" + dependencyartifact.get("path") + ";");
 
-                                        progress.incrementValue(
-                                                Integer.parseInt(dependencyartifact.get("size").toString()));
-                                        logger.progress(progress, totalSize);
                                     }
+                                }
+
+                                if (!allow) {
+                                    logger.log("Skipping library " + dependency.get("name").toString()
+                                            + " due to OS restrictions...");
+                                    continue;
+                                }
+                            }
+                            logger.log("Downloading library " + dependency.get("name").toString() + "...");
+                            file = new File(Path + "\\libraries\\" + dependencyartifact.get("path"));
+                            if (!file.exists()) {
+                                boolean downloaded = HttpRequests
+                                        .downloadFile(dependencyartifact.get("url").toString(),
+                                                Path + "\\libraries\\" + dependencyartifact.get("path"));
+                                if (!downloaded) {
+                                    return;
                                 }
                             } else {
-                                logger.log("Downloading library " + dependency.get("name").toString() + "...");
-                                file = new File(Path + "\\libraries\\" + dependencyartifact.get("path"));
-                                if (!file.exists()) {
-                                    boolean downloaded = HttpRequests
-                                            .downloadFile(dependencyartifact.get("url").toString(),
-                                                    Path + "\\libraries\\" + dependencyartifact.get("path"));
-                                    if (!downloaded) {
-                                        return;
-                                    }
-                                } else {
-                                    logger.log("Skipping library " + dependency.get("name").toString() + "...");
-                                }
-                                Libraries.append(Path + "\\libraries\\" + dependencyartifact.get("path") + ";");
-                                progress.incrementValue(Integer.parseInt(dependencyartifact.get("size").toString()));
-                                logger.progress(progress, totalSize);
-
+                                logger.log("Skipping library " + dependency.get("name").toString() + "...");
                             }
+                            Libraries.append(Path + "\\libraries\\" + dependencyartifact.get("path") + ";");
+                            progress.incrementValue(Integer.parseInt(dependencyartifact.get("size").toString()));
+                            logger.progress(progress, totalSize);
+
                         }
 
                         HashMap<String, Object> dependencyclasifier = (HashMap<String, Object>) dependencyDownloads
                                 .get("classifiers");
 
                         if (dependencyclasifier != null) {
-                            logger.log("Downloading classifer " + dependency.get("name").toString() + "...");
-                            HashMap<String, Object> dependencyclasifierrequired = (HashMap<String, Object>) dependencyclasifier
-                                    .get("natives-windows-64");
+                            ArrayList<HashMap<String, Object>> dependencyrules = (ArrayList<HashMap<String, Object>>) dependency
+                                    .get("rules");
+                            if (dependencyrules != null) {
+                                Boolean allow = true;
+                                for (HashMap<String, Object> rule : dependencyrules) {
 
-                            if (dependencyclasifierrequired != null) {
-                                logger.log("Downloading library " + dependency.get("name").toString() + "...");
-                                file = new File(Path + "\\libraries\\" + dependencyclasifierrequired.get("path"));
-                                if (!file.exists()) {
-                                    boolean downloaded = HttpRequests
-                                            .downloadFile(dependencyclasifierrequired.get("url").toString(),
-                                                    Path + "\\libraries\\" + dependencyclasifierrequired.get("path"));
-                                    if (!downloaded) {
-                                        return;
+                                    HashMap<String, Object> os = (HashMap<String, Object>) rule.get("os");
+                                    String action = rule.get("action").toString();
+
+                                    if (action != null && action.equals("disallow")) {
+
+                                        if (os != null
+                                                && os.get("name").toString().toLowerCase().contains("windows")) {
+                                            allow = false;
+                                        }
+
                                     }
-                                } else {
-                                    logger.log("Skipping library " + dependency.get("name").toString() + "...");
                                 }
-                                Libraries
-                                        .append(Path + "\\libraries\\" + dependencyclasifierrequired.get("path") + ";");
-                                progress.incrementValue(
-                                        Integer.parseInt(dependencyclasifierrequired.get("size").toString()));
-                                logger.progress(progress, totalSize);
+
+                                if (!allow) {
+                                    logger.log("Skipping library " + dependency.get("name").toString()
+                                            + " due to OS restrictions...");
+                                    continue;
+                                }
                             }
 
-                            HashMap<String, Object> dependencyclasifierrequirednoarch = (HashMap<String, Object>) dependencyclasifier
-                                    .get("natives-windows");
-                            if (dependencyclasifierrequirednoarch != null) {
+                            logger.log("Downloading classifed dependency " + dependency.get("name").toString() + "...");
+                            HashMap<String, Object> natives = (HashMap<String, Object>) dependency
+                                    .get("natives");
+
+                            String dependencyclasifierrequired = natives
+                                    .get("windows").toString();
+                            if (dependencyclasifierrequired.equalsIgnoreCase("natives-windows-${arch}")) {
+                                dependencyclasifierrequired = "natives-windows-" + System.getProperty("os.arch");
+                            }
+                            System.out.println(dependencyclasifierrequired);
+
+                            HashMap<String, Object> dependencyclasifiedWindows = (HashMap<String, Object>) dependencyclasifier
+                                    .get(dependencyclasifierrequired);
+                            if (dependencyclasifiedWindows != null) {
                                 logger.log("Downloading library " + dependency.get("name").toString() + "...");
-                                file = new File(Path + "\\libraries\\" + dependencyclasifierrequirednoarch.get("path"));
+                                file = new File(
+                                        Path + "\\libraries\\" + dependencyclasifiedWindows.get("path"));
                                 if (!file.exists()) {
                                     boolean downloaded = HttpRequests
-                                            .downloadFile(dependencyclasifierrequirednoarch.get("url").toString(),
+                                            .downloadFile(dependencyclasifiedWindows.get("url").toString(),
                                                     Path + "\\libraries\\"
-                                                            + dependencyclasifierrequirednoarch.get("path"));
+                                                            + dependencyclasifiedWindows.get("path"));
                                     if (!downloaded) {
                                         return;
                                     }
@@ -234,10 +240,11 @@ public class VersionDownloader implements Runnable {
                                     logger.log("Skipping library " + dependency.get("name").toString() + "...");
                                 }
                                 Libraries
-                                        .append(Path + "\\libraries\\" + dependencyclasifierrequirednoarch.get("path")
+                                        .append(Path + "\\libraries\\"
+                                                + dependencyclasifiedWindows.get("path")
                                                 + ";");
                                 progress.incrementValue(
-                                        Integer.parseInt(dependencyclasifierrequirednoarch.get("size").toString()));
+                                        Integer.parseInt(dependencyclasifiedWindows.get("size").toString()));
                                 logger.progress(progress, totalSize);
                             }
                         }
