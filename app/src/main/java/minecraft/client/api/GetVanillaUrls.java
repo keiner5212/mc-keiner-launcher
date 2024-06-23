@@ -11,6 +11,7 @@ import minecraft.client.net.HttpRequests;
 import minecraft.client.persistance.FileManager;
 
 public class GetVanillaUrls implements Runnable {
+
     private Operation op;
     private String version;
     private String Path;
@@ -23,9 +24,12 @@ public class GetVanillaUrls implements Runnable {
 
     @Override
     public void run() {
+        JSONObject jo = null;
         try {
-            JSONObject jo = FileManager.loadData(Path + "\\versions\\" + version + "\\" + version + ".json");
-            op.Run(Json.fromJSONObject(jo));
+            jo = FileManager.loadData(Path + "\\versions\\" + version + "\\" + version + ".json");
+            if (jo == null) {
+                throw new NoSuchFieldError();
+            }
         } catch (Exception e) {
             ArrayList<HashMap<String, Object>> versions = (ArrayList<HashMap<String, Object>>) VersionsRequests
                     .getVersionsVanilla();
@@ -45,5 +49,7 @@ public class GetVanillaUrls implements Runnable {
                 op.Run(json);
             }
         }
+        op.Run(Json.fromJSONObject(jo));
+
     }
 }

@@ -124,7 +124,6 @@ public class MinecraftExecutor {
                 }
             }).start();
 
-            System.exit(0);
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
