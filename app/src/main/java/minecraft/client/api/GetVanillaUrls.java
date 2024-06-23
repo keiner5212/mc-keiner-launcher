@@ -28,28 +28,30 @@ public class GetVanillaUrls implements Runnable {
         try {
             jo = FileManager.loadData(Path + "\\versions\\" + version + "\\" + version + ".json");
             if (jo == null) {
-                throw new NoSuchFieldError();
+                ArrayList<HashMap<String, Object>> versions = (ArrayList<HashMap<String, Object>>) VersionsRequests
+                        .getVersionsVanilla();
+                String url = null;
+                boolean found = false;
+                for (HashMap<String, Object> v : versions) {
+                    if (v.get("id").toString().equals(version)) {
+                        found = true;
+                        url = (v.get("url").toString());
+                    }
+                }
+
+                if (!found) {
+                    op.Run();
+                } else {
+                    Json json = HttpRequests.sendGetJSONHTTPRequest(url, true);
+                    op.Run(json);
+                }
+
+            } else {
+                op.Run(Json.fromJSONObject(jo));
             }
         } catch (Exception e) {
-            ArrayList<HashMap<String, Object>> versions = (ArrayList<HashMap<String, Object>>) VersionsRequests
-                    .getVersionsVanilla();
-            String url = null;
-            boolean found = false;
-            for (HashMap<String, Object> v : versions) {
-                if (v.get("id").toString().equals(version)) {
-                    found = true;
-                    url = (v.get("url").toString());
-                }
-            }
-
-            if (!found) {
-                op.Run();
-            } else {
-                Json json = HttpRequests.sendGetJSONHTTPRequest(url, true);
-                op.Run(json);
-            }
+            System.out.println("error fetching vanilla versions:" + e);
         }
-        op.Run(Json.fromJSONObject(jo));
 
     }
 }
