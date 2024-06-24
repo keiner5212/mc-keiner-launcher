@@ -22,6 +22,7 @@ gradle-app.setting
 app/bin/
 app/logs/
 app/user.json
+*.log
 
 # Eclipse Gradle plugin generated files
 # Eclipse Core

@@ -3,12 +3,11 @@ package minecraft.client.api;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.json.JSONObject;
-
-import minecraft.client.entities.Json;
 import minecraft.client.entities.Operation;
 import minecraft.client.net.HttpRequests;
 import minecraft.client.persistance.FileManager;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
 
 public class GetVanillaUrls implements Runnable {
 
@@ -27,11 +26,12 @@ public class GetVanillaUrls implements Runnable {
         JSONObject jo = null;
         jo = FileManager.loadData(Path + "\\versions\\" + version + "\\" + version + ".json");
         if (jo == null) {
-            ArrayList<HashMap<String, Object>> versions = (ArrayList<HashMap<String, Object>>) VersionsRequests
+            JSONArray versions = VersionsRequests
                     .getVersionsVanilla();
             String url = null;
             boolean found = false;
-            for (HashMap<String, Object> v : versions) {
+            for (Object elem : versions) {
+                JSONObject v = (JSONObject) elem;
                 if (v.get("id").toString().equals(version)) {
                     found = true;
                     url = (v.get("url").toString());
@@ -41,12 +41,12 @@ public class GetVanillaUrls implements Runnable {
             if (!found) {
                 op.Run();
             } else {
-                Json json = HttpRequests.sendGetJSONHTTPRequest(url, true);
+                JSONObject json = HttpRequests.sendGetJSONHTTPRequest(url, true);
                 op.Run(json);
             }
 
         } else {
-            op.Run(Json.fromJSONObject(jo));
+            op.Run(jo);
         }
 
     }

@@ -21,10 +21,10 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.12.3'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.3'
-    // https://mvnrepository.com/artifact/com.jtattoo/JTattoo
     implementation 'com.jtattoo:JTattoo:1.6.13'
-    // https://mvnrepository.com/artifact/org.json/json
-    implementation 'org.json:json:20240303'
+    implementation 'com.flowpowered:flow-nbt:1.0.0'
+    implementation 'net.minidev:json-smart:2.4.8'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.0'
 }
 
 application {

@@ -14,13 +14,20 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
-import minecraft.client.entities.Json;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
+import net.minidev.json.parser.JSONParser;
+
 
 public class HttpRequests {
-    private static HashMap<String, Json> cache = new HashMap<>();
+    private static HashMap<String, JSONObject> cache = new HashMap<>();
 
-    public static Json sendGetJSONHTTPRequest(String url, boolean useCache) {
+    public static JSONObject sendGetJSONHTTPRequest(String url, boolean useCache) {
         if (useCache && cache.containsKey(url)) {
             return cache.get(url);
         }
@@ -29,11 +36,14 @@ public class HttpRequests {
             HttpGet request = new HttpGet(url);
             try (CloseableHttpResponse response = httpClient.execute(request)) {
                 HttpEntity entity = response.getEntity();
-                Json parsed = Json.JsonfromHttpEntity(entity, false);
-                if (useCache) {
-                    cache.put(url, parsed);
+                if (entity != null) {
+                    String result = EntityUtils.toString(entity);
+                    JSONObject parsed =  (JSONObject) JSONValue.parse(result);
+                    if (useCache) {
+                        cache.put(url, parsed);
+                    }
+                    return parsed;
                 }
-                return parsed;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -42,7 +52,7 @@ public class HttpRequests {
         return null;
     }
 
-    public static Json sendGetXMLHTTPRequest(String url, boolean useCache) {
+    public static JSONObject sendGetXMLHTTPRequest(String url, boolean useCache) {
         if (useCache && cache.containsKey(url)) {
             return cache.get(url);
         }
@@ -51,11 +61,22 @@ public class HttpRequests {
             HttpGet request = new HttpGet(url);
             try (CloseableHttpResponse response = httpClient.execute(request)) {
                 HttpEntity entity = response.getEntity();
-                Json parsed = Json.JsonfromHttpEntity(entity, true);
-                if (useCache) {
-                    cache.put(url, parsed);
+                if (entity != null) {
+                    String result = EntityUtils.toString(entity);
+                    
+                    // Use Jackson to convert XML to a generic Object
+                    ObjectMapper xmlMapper = new XmlMapper();
+                    Object xmlObject = xmlMapper.readValue(result, Object.class);
+                    
+                    // Convert the generic Object to net.minidev.json.JSONObject
+                    @SuppressWarnings("unchecked")
+                    JSONObject parsed = new JSONObject((HashMap<String, Object>) xmlObject);
+                    
+                    if (useCache) {
+                        cache.put(url, parsed);
+                    }
+                    return parsed;
                 }
-                return parsed;
             }
         } catch (Exception e) {
             e.printStackTrace();

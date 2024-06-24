@@ -7,6 +7,8 @@ import java.util.HashMap;
 import javax.swing.JComboBox;
 
 import minecraft.client.api.VersionsRequests;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
 
 /**
  *
@@ -23,18 +25,20 @@ public class VersionsVanilla implements Runnable {
 
     @Override
     public void run() {
-        ArrayList<HashMap<String, Object>> versions = (ArrayList<HashMap<String, Object>>) VersionsRequests
+        JSONArray versions = VersionsRequests
                 .getVersionsVanilla();
         lista.removeAllItems();
         switch (type) {
             case "Any":
-                for (HashMap<String, Object> version : versions) {
+                for (Object elem : versions) {
+                    JSONObject version = (JSONObject) elem;
                     lista.addItem(version.get("id").toString() + " (" + version.get("type").toString() + ")");
                 }
                 break;
 
             case "Release":
-                for (HashMap<String, Object> version : versions) {
+                for (Object elem : versions) {
+                    JSONObject version = (JSONObject) elem;
                     if (version.get("type").toString().equals("release")) {
                         lista.addItem(version.get("id").toString());
                     }
@@ -42,7 +46,8 @@ public class VersionsVanilla implements Runnable {
                 break;
 
             case "Snapshot":
-                for (HashMap<String, Object> version : versions) {
+                for (Object elem : versions) {
+                    JSONObject version = (JSONObject) elem;
                     if (version.get("type").toString().equals("snapshot")) {
                         lista.addItem(version.get("id").toString());
                     }
@@ -50,7 +55,8 @@ public class VersionsVanilla implements Runnable {
                 break;
 
             case "Other":
-                for (HashMap<String, Object> version : versions) {
+                for (Object elem : versions) {
+                    JSONObject version = (JSONObject) elem;
                     if (!version.get("type").toString().equals("release")
                             && !version.get("type").toString().equals("snapshot")) {
                         lista.addItem(version.get("id").toString() + " (" + version.get("type").toString() + ")");

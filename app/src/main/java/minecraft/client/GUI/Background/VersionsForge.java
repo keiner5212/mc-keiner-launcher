@@ -17,12 +17,11 @@ public class VersionsForge implements Runnable {
 
     @Override
     public void run() {
-        ArrayList<String> versions = (ArrayList<String>) VersionsRequests
-                .getVersionsForge();
+        ArrayList<String> versions = new ArrayList<String>(VersionsRequests.getVersionsForge()); 
         lista.removeAllItems();
-        for (String version : versions) {
-            if (version.startsWith(SelectedVersion)) {
-                lista.addItem(version);
+        for (String element : versions) {
+            if (element.startsWith(SelectedVersion)) {
+                lista.addItem(element);
             }
         }
     }
