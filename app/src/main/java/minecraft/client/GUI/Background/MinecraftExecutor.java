@@ -24,11 +24,14 @@ public class MinecraftExecutor implements ILaunchSettings {
         this.width = width;
         this.height = height;
         this.AdditionalcommandJVM = new ArrayList<>();
+        AdditionalcommandJVM.add("-XX:+UnlockExperimentalVMOptions");
         AdditionalcommandJVM.add("-XX:+UseG1GC");
         AdditionalcommandJVM.add("-XX:G1NewSizePercent=20");
         AdditionalcommandJVM.add("-XX:MaxGCPauseMillis=100");
         AdditionalcommandJVM.add("-XX:G1HeapRegionSize=16M");
         AdditionalcommandJVM.add("-Djava.net.preferIPv4Stack=true");
+        // AdditionalcommandJVM.add("-Dorg.lwjgl.util.DebugLoader=true");
+        // AdditionalcommandJVM.add("-Dorg.lwjgl.util.Debug=true");
     }
 
     @Override

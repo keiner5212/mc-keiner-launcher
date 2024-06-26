@@ -14,7 +14,6 @@ import net.minidev.json.JSONValue;
 final class MCDResourcesInstaller {
 
     private final File assetsDir, indexesDir, objectsDir, virtualDir;
-    private static final String RESOURCES_INDEX_URL = "https://s3.amazonaws.com/Minecraft.Download/indexes/";
 
     MCDResourcesInstaller(MinecraftInstance mc) {
         assetsDir = new File(mc.getLocation(), "assets");

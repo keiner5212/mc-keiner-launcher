@@ -4,18 +4,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
 import minecraft.client.GUI.Logger;
 import minecraft.client.GUI.Background.download.MCDownloadVersionList;
 import minecraft.client.api.GetVanillaUrls;
-import minecraft.client.entities.DummyProgressMonitor;
 import minecraft.client.entities.Operation;
-import minecraft.client.entities.SharedCounter;
 import minecraft.client.entities.versions.IVersion;
-import minecraft.client.persistance.FileManager;
 import net.minidev.json.JSONObject;
-import minecraft.client.api.common.ILaunchSettings;
 import minecraft.client.api.common.mc.MinecraftInstance;
 import minecraft.client.entities.ISession;
 
@@ -62,15 +59,35 @@ public class VersionDownloader implements Runnable {
     public void run() {
         this.logger.log("Fetching " + this.VanillaversionId + " version...");
         Operation operation = new Operation() {
-            // @SuppressWarnings("unchecked")
+            @SuppressWarnings("unchecked")
             @Override
             public void Run(Object... args) {
                 if (args.length != 0) {
                     logger.log("Fetching " + VanillaversionId + " version complete.");
-                    FileManager.saveData(
-                            minecraftInstance.getLocation().getAbsolutePath() + "\\versions\\" + VanillaversionId + "\\"
-                                    + VanillaversionId + ".json",
-                            (JSONObject) args[0]);
+                    // JSONObject content = (JSONObject) args[0];
+                    // FileManager.saveData(
+                    //         minecraftInstance.getLocation().getAbsolutePath() + "\\versions\\" + VanillaversionId + "\\"
+                    //                 + VanillaversionId + ".json",
+                    //         content);
+
+                    // 1. download the vanilla client
+
+                    // logger.log("Downloading " + VanillaversionId + " client...");
+
+                    // File file = new File(minecraftInstance.getLocation().getAbsolutePath() + "\\versions\\"
+                    //         + VanillaversionId + "\\" + VanillaversionId + ".jar");
+                    // if (!file.exists()) {
+                    //     boolean downloaded = HttpRequests
+                    //             .downloadFile(client.get("url").toString(),
+                    //                     minecraftInstance.getLocation().getAbsolutePath() + "\\versions\\"
+                    //                             + VanillaversionId + "\\" + VanillaversionId + ".jar");
+                    //     if (!downloaded) {
+                    //         logger.log("Failed to download " + VanillaversionId + " client. ");
+                    //         return;
+                    //     }
+                    // }
+
+                    // logger.log("Downloading " + VanillaversionId + " client complete.");
 
                     // 1. download Minecraft
 
@@ -81,6 +98,7 @@ public class VersionDownloader implements Runnable {
                         boolean isCompatible = mcVersion.isCompatible();
                         logger.log("Version is compatible: " + isCompatible);
                         MinecraftExecutor executor = new MinecraftExecutor(Memory, width, height, jvm);
+                        mcVersion.getInstaller().install(mcVersion, minecraftInstance, null);
                         List<String> command = mcVersion.getLauncher().getLaunchCommand(
                                 session,
                                 minecraftInstance,
@@ -88,25 +106,21 @@ public class VersionDownloader implements Runnable {
                                 executor);
 
                         ProcessBuilder pb = new ProcessBuilder(command);
-                        try {
-                            Process process = pb.start();
+                        Process process = pb.start();
 
-                            InputStream errorStream = process.getErrorStream();
+                        InputStream errorStream = process.getErrorStream();
 
-                            new Thread(() -> {
-                                try (BufferedReader reader = new BufferedReader(
-                                        new InputStreamReader(errorStream))) {
-                                    String line;
-                                    while ((line = reader.readLine()) != null) {
-                                        logger.log(line);
-                                    }
-                                } catch (IOException e) {
-                                    logger.log(e.getMessage());
+                        new Thread(() -> {
+                            try (BufferedReader reader = new BufferedReader(
+                                    new InputStreamReader(errorStream))) {
+                                String line;
+                                while ((line = reader.readLine()) != null) {
+                                    logger.log(line);
                                 }
-                            }).start();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                            } catch (IOException e) {
+                                logger.log(e.getMessage());
+                            }
+                        }).start();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

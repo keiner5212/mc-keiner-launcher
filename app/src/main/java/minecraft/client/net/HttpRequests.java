@@ -21,7 +21,6 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
-import net.minidev.json.parser.JSONParser;
 
 
 public class HttpRequests {

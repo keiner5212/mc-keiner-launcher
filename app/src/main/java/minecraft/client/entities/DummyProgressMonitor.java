@@ -3,6 +3,8 @@ package minecraft.client.entities;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 
+import minecraft.client.GUI.Background.Instalation;
+
 public class DummyProgressMonitor implements IProgressMonitor{
     public static JProgressBar progressBar;
     public static JLabel progressLabel;
@@ -15,14 +17,14 @@ public class DummyProgressMonitor implements IProgressMonitor{
     @Override
     public void setProgress(int progress) {
         progressBar.setValue(progress);
-        progressLabel.setText(progress + " Bytes");
+        progressLabel.setText(progress + " Bytes"+" / "+Instalation.totalSize+" Bytes");
     }
 
     @Override
     public void setMax(int len) {
         progressBar.setMaximum(len);
         progressBar.setValue(0);
-        progressLabel.setText("0%");
+        Instalation.totalSize = len;
     }
 
     @Override

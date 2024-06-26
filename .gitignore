@@ -18,11 +18,15 @@ gradle-app.setting
 # Cache of project
 .gradletasknamecache
 
-# bin & logs
 app/bin/
 app/logs/
 app/user.json
 *.log
+app/textures_0.png
+app/textures_1.png
+app/textures_2.png
+app/textures_3.png
+app/textures_4.png
 
 # Eclipse Gradle plugin generated files
 # Eclipse Core

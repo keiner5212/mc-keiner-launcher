@@ -36,8 +36,6 @@ public class VersionsRequests {
         Object versioning =json.get("versioning");
         Object versions = JsonUtils.JSONFromObject(versioning).get("versions");
         Object version = JsonUtils.JSONFromObject(versions).get("version");
-        System.out.println(version);
-        System.out.println(version.getClass().getName());
         return (List<String>) version;
     }
 }

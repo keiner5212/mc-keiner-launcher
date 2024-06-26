@@ -16,6 +16,8 @@ import minecraft.client.entities.ISession.Prop;
 import minecraft.client.entities.versions.IVersion;
 import minecraft.client.entities.versions.IVersionLauncher;
 import minecraft.client.impl.common.Platform;
+import minecraft.client.net.HttpRequests;
+import minecraft.client.net.HttpUtils;
 import minecraft.client.util.StringSubstitutor;
 
 final class MCDownloadVersionLauncher implements IVersionLauncher {
@@ -132,11 +134,17 @@ final class MCDownloadVersionLauncher implements IVersionLauncher {
             // each library has to be compatible, installed and allowed by modding profile
             if (lib.getArtifact() != null && lib.isCompatible() && (!moddingProfileSpecified)) {
                 if (!libraryProvider.isInstalled(lib)) {
-                    throw new FileNotFoundException("Library file wasn't found: " + lib.getPath());
+                    MCLauncherAPI.log.fine("Warning: Library " + lib.getName()
+                            + " is not installed, trying to download from maven...");
+                    boolean downloaded = HttpRequests.downloadFile(HttpUtils.getMavenJarUrl(lib.getName()),
+                            mc.getLocation() + "\\libraries\\" + lib.getPath());
+                    if (!downloaded)
+                        throw new FileNotFoundException("Library file wasn't found: " + lib.getPath());
                 }
                 MCLauncherAPI.log.finest("Adding ".concat(lib.getName()));
-                librariesString = librariesString.append(libraryProvider.getLibraryFile(lib).getAbsolutePath()).append(
-                        LIBRARY_SEPARATOR);
+                librariesString = librariesString.append(mc.getLocation() + "\\libraries\\" + lib.getPath())
+                        .append(
+                                LIBRARY_SEPARATOR);
             }
         }
         // append the game JAR at the end
@@ -152,15 +160,25 @@ final class MCDownloadVersionLauncher implements IVersionLauncher {
         List<String> arguments = getArguments(version.getGameArgs(), mc, resourcesInstaller.getAssetsDirectory(),
                 session, settings,
                 version);
-        
+
         // size
-        arguments.add("-width");
+        arguments.add("--width");
         arguments.add(String.valueOf(settings.getWidth()));
-        arguments.add("-height");
+        arguments.add("--height");
         arguments.add(String.valueOf(settings.getHeight()));
+
+        for (int i = 0; i < arguments.size(); i++) {
+            String arg = arguments.get(i);
+            if (arg.equalsIgnoreCase("${version_type}")) {
+                arguments.set(i, version.getType());
+            } else if (arg.equalsIgnoreCase("${auth_xuid}")) {
+                arguments.set(i, "0000000000000000");
+            } else if (arg.equalsIgnoreCase("${clientid}")) {
+                arguments.set(i, "00000000-0000-0000-0000-000000000000:00000000-0000-0000-0000-000000000000");
+            }
+        }
+
         // append all arguments to the command
-        command.addAll(arguments);
-        // now append all minecraft arguments to the command
         for (String arg : arguments) {
             command.add(arg);
         }

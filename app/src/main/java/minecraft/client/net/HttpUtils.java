@@ -3,6 +3,7 @@ package minecraft.client.net;
 import javax.net.ssl.HttpsURLConnection;
 
 import minecraft.client.entities.json.IJSONSerializable;
+import net.minidev.json.JSONObject;
 import net.minidev.json.JSONStyle;
 
 import java.io.*;
@@ -15,6 +16,19 @@ import java.security.cert.Certificate;
  * Http communication utilities
  */
 public final class HttpUtils {
+
+
+    public static String getMavenJarUrl(String name) {
+        String[] parts = name.split(":");
+        String groupId = parts[0];
+        String artifactId = parts[1];
+        String version = parts[2];
+        String baseUrl = "https://repo1.maven.org/maven2/";
+        String jarPath = groupId.replace('.', '/') + "/" + artifactId + "/" + version + "/" + artifactId + "-" + version + ".jar";
+        String jarUrl = baseUrl + jarPath;
+
+        return jarUrl;
+    }
 
     /**
      * Executes a simple HTTP-GET request

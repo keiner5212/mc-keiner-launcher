@@ -1,7 +1,6 @@
 package minecraft.client.impl.common;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 
 import minecraft.client.api.common.IOperatingSystem;
 import minecraft.client.api.common.MCLauncherAPI;

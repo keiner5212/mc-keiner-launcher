@@ -26,7 +26,6 @@ import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
-
 /**
  *
  * @author keiner5212
@@ -86,7 +85,7 @@ public class Main extends javax.swing.JFrame {
 
                 installerLogger = new Logger(loggerscroll, logger);
                 monitor = new DummyProgressMonitor(progressbar, progresslabel);
-                mcApi= new MCLauncherAPI(installerLogger);
+                mcApi = new MCLauncherAPI(installerLogger);
                 JSONObject readed = FileManager.loadData(Locations.USER_DATA_LOCATION);
                 if (readed != null) {
                         userJson = readed;
@@ -118,7 +117,7 @@ public class Main extends javax.swing.JFrame {
                                         e.printStackTrace();
                                 }
                         }
-                        mc=new MinecraftInstance(new File(gamedir.getText().trim()));
+                        mc = new MinecraftInstance(new File(gamedir.getText().trim()));
                 } else {
                         String userName = System.getProperty("user.name");
                         String defaultDirPath = "C:\\Users\\" + userName + "\\AppData\\Roaming\\.minecraft";
@@ -138,7 +137,7 @@ public class Main extends javax.swing.JFrame {
                                 defaultDir.mkdirs();
                         }
                         gamedir.setText(defaultDir.getAbsolutePath());
-                        mc=new MinecraftInstance(defaultDir);
+                        mc = new MinecraftInstance(defaultDir);
                 }
 
                 JSONObject readedprofiles = FileManager
@@ -866,6 +865,7 @@ public class Main extends javax.swing.JFrame {
                                         new JSONObject(userJson));
                         FileManager.saveData(gamedir.getText().trim() + "\\" + Locations.PROFILES_LOCATION,
                                         new JSONObject(profiles));
+                        updateInstalations();
                 }
 
                 VersionDownloader versionDownloader = new VersionDownloader(Loader.getSelectedItem().toString(),

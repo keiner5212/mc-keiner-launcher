@@ -16,12 +16,11 @@ import minecraft.client.impl.common.Platform;
 final class MCDownloadVersion implements IVersion, IJSONSerializable {
     private static final MCDownloadVersionInstaller installer = new MCDownloadVersionInstaller(DummyProgressMonitor.progressBar, DummyProgressMonitor.progressLabel);
     private static final IVersionLauncher launcher = new MCDownloadVersionLauncher();
-    private static final String DEFAULT_ASSETS_INDEX = "legacy";
     private ArgumentList jvmArgs;
     private ArgumentList gameArgs;
 
     private String id, time, releaseTime, type, mainClass, jarVersion;
-    private Artifact client, server;
+    private Artifact client;
     private Artifact assetIndex;
     private String assetsIndexName;
     private Integer minimumLauncherVersion;
@@ -42,7 +41,6 @@ final class MCDownloadVersion implements IVersion, IJSONSerializable {
         this.mainClass = builder.mainClass;
         this.jarVersion = builder.jarVersion;
         this.client = builder.client;
-        this.server = builder.server;
         this.assetIndex = builder.assetIndex;
         this.assetsIndexName = builder.assetsIndexName;
         this.minimumLauncherVersion = builder.minimumLauncherVersion;
@@ -112,9 +110,6 @@ final class MCDownloadVersion implements IVersion, IJSONSerializable {
             JSONObject downloads = (JSONObject) json.get("downloads");
             if (downloads.containsKey("client"))
                 builder.client = Artifact.fromJson((JSONObject) downloads.get("client"));
-            // old_alpha versions do not provide server binaries
-            if (downloads.containsKey("server"))
-                builder.server = Artifact.fromJson((JSONObject) downloads.get("server"));
         }
 
         if (json.containsKey("incompatibilityReason"))
@@ -268,11 +263,7 @@ final class MCDownloadVersion implements IVersion, IJSONSerializable {
     public Artifact getClient() {
         return client;
     }
-
-    public Artifact getServer() {
-        return server;
-    }
-
+    
     public String getAssetsIndexName() {
         return assetsIndexName;
     }
@@ -281,7 +272,7 @@ final class MCDownloadVersion implements IVersion, IJSONSerializable {
         ArgumentList jvmArgs;
         ArgumentList gameArgs;
         String id, time, releaseTime, type, mainClass, jarVersion;
-        Artifact client = null, server = null;
+        Artifact client = null;
         Artifact assetIndex;
         JSONObject json;
         String assetsIndexName;
