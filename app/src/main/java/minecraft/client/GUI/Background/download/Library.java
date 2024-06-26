@@ -3,10 +3,13 @@ package minecraft.client.GUI.Background.download;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import minecraft.client.GUI.Main;
 import minecraft.client.api.common.IOperatingSystem;
 import minecraft.client.impl.common.Platform;
 import minecraft.client.util.IExtractRules;
@@ -24,10 +27,13 @@ final class Library {
     private final IExtractRules extractRules;
     private final Artifact artifact;
     private final Map<String, Artifact> classifiers;
+    private String Path;
 
-    private Library(String name, Map<String, String> natives, RuleList rules, IExtractRules extractRules, Artifact artifact, Map<String, Artifact> classifiers) {
+    private Library(String name, Map<String, String> natives, RuleList rules, IExtractRules extractRules,
+            Artifact artifact, Map<String, Artifact> classifiers, String Path) {
         this.name = name;
         this.natives = Collections.unmodifiableMap(natives);
+        this.Path = Path;
         this.rules = rules;
         this.extractRules = extractRules;
         this.artifact = artifact;
@@ -58,31 +64,38 @@ final class Library {
             extractRules = null;
         }
 
+        String libPath = "";
+
         JSONObject downloads = (JSONObject) json.get("downloads");
         if (downloads != null && downloads.containsKey("artifact")) {
-            artifact = Artifact.fromJson((JSONObject) downloads.get("artifact"));
+            JSONObject artifacts = (JSONObject) downloads.get("artifact");
+            artifact = Artifact.fromJson(artifacts);
+            if (artifacts.containsKey("path")) {
+                libPath = artifacts.get("path").toString();
+            } else {
+                libPath = nameToPath(name);
+            }
         } else {
             String rootUrl = DEFAULT_LIBS_URL;
             if (json.containsKey("url")) {
                 rootUrl = json.get("url").toString();
             }
 
-            if(downloads == null) {
+            if (downloads == null) {
                 String url = rootUrl + nameToPath(name) + ".jar";
                 artifact = Artifact.fromUrl(url);
             }
         }
 
-
         if (downloads != null && downloads.containsKey("classifiers")) {
             JSONObject cls = (JSONObject) downloads.get("classifiers");
             assert cls != null;
             for (Map.Entry<String, Object> entry : cls.entrySet()) {
-                classifiers.put(entry.getKey(), Artifact.fromJson((JSONObject)entry.getValue()));
+                classifiers.put(entry.getKey(), Artifact.fromJson((JSONObject) entry.getValue()));
             }
         }
 
-        return new Library(name, natives, rules, extractRules, artifact, classifiers);
+        return new Library(name, natives, rules, extractRules, artifact, classifiers, libPath);
     }
 
     public String getName() {
@@ -91,6 +104,7 @@ final class Library {
 
     /**
      * Returns name of library that holds natives for given operating system
+     * 
      * @param os - IOperatingSystem to check
      * @return Name of library which holds natives for given OS
      */
@@ -115,24 +129,36 @@ final class Library {
     }
 
     /**
-     * Returns relative path of library as string. Relative path is used in URLs, file paths.
+     * Returns relative path of library as string. Relative path is used in URLs,
+     * file paths.
      * You can read more about this on wiki...
+     * 
      * @return Relative path of library.
      */
     public String getPath() {
-        libraryPathSubstitutor.setVariable("arch", Platform.getCurrentPlatform().getArchitecture());
+        List<String> PathSubstitutorVersions = Arrays.asList("1.8.", "1.7.", "1.6.", "1.4.", "1.3.", "1.2.",
+                "1.1.",
+                "1.0.");
+        boolean contains = PathSubstitutorVersions.contains(Main.gameVersion + ".");
+        if (contains) {
+            libraryPathSubstitutor.setVariable("arch",
+                    Platform.getCurrentPlatform().getArchitecture());
 
-        StringBuilder result = new StringBuilder(nameToPath(name));
+            StringBuilder result = new StringBuilder(nameToPath(name));
 
-        if (!natives.isEmpty()) {
-            IOperatingSystem os = Platform.getCurrentPlatform();
-            String osName = os.getMinecraftName();
-            if(!natives.containsKey(osName))
-                osName = Platform.wrapName(osName);
-            result = result.append('-').append(natives.get(osName));
+            if (!natives.isEmpty()) {
+                IOperatingSystem os = Platform.getCurrentPlatform();
+                String osName = os.getMinecraftName();
+                if (!natives.containsKey(osName))
+                    osName = Platform.wrapName(osName);
+                result = result.append('-').append(natives.get(osName));
+            }
+            result = result.append(".jar");
+            return libraryPathSubstitutor.substitute(result.toString());
         }
-        result = result.append(".jar");
-        return libraryPathSubstitutor.substitute(result.toString());
+
+        return Path;
+
     }
 
     /**
@@ -140,11 +166,14 @@ final class Library {
      * @return True if this library is compatible with the current operating system
      */
     boolean isCompatible() {
-        // the following condition is very important and can brackets can be ignored while reading(they're just to increase readability)
+        // the following condition is very important and can brackets can be ignored
+        // while reading(they're just to increase readability)
         // library is compatible if:
-        //    (there are no rules) OR ((action is allow) AND (there are EITHER ((no natives) OR (natives for this platform are available))))
+        // (there are no rules) OR ((action is allow) AND (there are EITHER ((no
+        // natives) OR (natives for this platform are available))))
         return rules.allows(Platform.getCurrentPlatform(), System.getProperty("os.version"), FeaturePreds.ALL)
-                && (!hasNatives() || natives.containsKey(Platform.getCurrentPlatform().getMinecraftName()) || natives.containsKey(Platform.wrapName(Platform.getCurrentPlatform().getMinecraftName())) );
+                && (!hasNatives() || natives.containsKey(Platform.getCurrentPlatform().getMinecraftName())
+                        || natives.containsKey(Platform.wrapName(Platform.getCurrentPlatform().getMinecraftName())));
     }
 
     /**

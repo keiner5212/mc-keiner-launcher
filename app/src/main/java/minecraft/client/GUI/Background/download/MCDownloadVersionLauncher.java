@@ -124,11 +124,13 @@ final class MCDownloadVersionLauncher implements IVersionLauncher {
         // find natives for this MC version
         final File nativesDir = new File(jarManager.getVersionFolder(v), "natives");
         command.add("-Djava.library.path=" + nativesDir.getAbsolutePath());
+
         // build classpath
         command.add("-cp");
         StringBuilder librariesString = new StringBuilder();
         final String LIBRARY_SEPARATOR = System.getProperty("path.separator");
         MCLauncherAPI.log.fine("Adding library files");
+
         //// now add library files
         for (Library lib : version.getLibraries()) {
             // each library has to be compatible, installed and allowed by modding profile
@@ -140,7 +142,7 @@ final class MCDownloadVersionLauncher implements IVersionLauncher {
                             mc.getLocation() + "\\libraries\\" + lib.getPath());
                     if (!downloaded)
                         throw new FileNotFoundException("Library file wasn't found: " + lib.getPath());
-                }
+                } 
                 MCLauncherAPI.log.finest("Adding ".concat(lib.getName()));
                 librariesString = librariesString.append(mc.getLocation() + "\\libraries\\" + lib.getPath())
                         .append(

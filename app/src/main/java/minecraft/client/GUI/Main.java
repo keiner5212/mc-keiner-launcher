@@ -40,6 +40,7 @@ public class Main extends javax.swing.JFrame {
         private MinecraftInstance mc;
         private MCLauncherAPI mcApi;
         private DummyProgressMonitor monitor;
+        public static String gameVersion=""; 
 
         public Main() {
                 try {
@@ -866,6 +867,7 @@ public class Main extends javax.swing.JFrame {
                         FileManager.saveData(gamedir.getText().trim() + "\\" + Locations.PROFILES_LOCATION,
                                         new JSONObject(profiles));
                         updateInstalations();
+                        Main.gameVersion=versions.getSelectedItem().toString();
                 }
 
                 VersionDownloader versionDownloader = new VersionDownloader(Loader.getSelectedItem().toString(),

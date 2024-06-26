@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import minecraft.client.api.common.IOperatingSystem;
 import minecraft.client.impl.common.Platform;
+import minecraft.client.util.SystemUtils;
 import net.minidev.json.JSONObject;
 
 final class Rule {
